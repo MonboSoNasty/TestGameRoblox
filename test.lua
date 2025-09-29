@@ -1,21 +1,12 @@
--- UI + Fire Toggle + Custom Fire Rate + Instant Spam Mode
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+-- UI + ClickEvent Spam
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
--- Path
-local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("ByteNet"):WaitForChild("system"):WaitForChild("ByteNetReliable")
-
--- Args
-local args = {
-    buffer.fromstring("\017\005\000Earth\t\000handLaser\159\224\030C\205\204\005B\187\167\003C\v\000Basic Laser")
-}
+local Remote = ReplicatedStorage:WaitForChild("ClickEvent")
 
 -- State
-local firing = false
-local instantSpam = false
-local fireRate = 0.001 -- default seconds
+local spamming = false
+local fireRate = 0.1 -- default seconds
 local lastFire = 0
 
 -- UI
@@ -23,13 +14,12 @@ local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local ToggleButton = Instance.new("TextButton")
 local RateBox = Instance.new("TextBox")
-local SpamButton = Instance.new("TextButton")
 local UIStroke = Instance.new("UIStroke")
 
 ScreenGui.Parent = game:GetService("CoreGui")
 
-Frame.Size = UDim2.new(0, 240, 0, 180)
-Frame.Position = UDim2.new(0.5, -120, 0.5, -90)
+Frame.Size = UDim2.new(0, 220, 0, 120)
+Frame.Position = UDim2.new(0.5, -110, 0.5, -60)
 Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Frame.Parent = ScreenGui
 Frame.Active = true
@@ -42,7 +32,7 @@ UIStroke.Thickness = 2
 
 ToggleButton.Size = UDim2.new(1, -20, 0, 40)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
-ToggleButton.Text = "Start Firing"
+ToggleButton.Text = "Start Clicking"
 ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Parent = Frame
@@ -55,47 +45,24 @@ RateBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 RateBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 RateBox.Parent = Frame
 
-SpamButton.Size = UDim2.new(1, -20, 0, 40)
-SpamButton.Position = UDim2.new(0, 10, 0, 100)
-SpamButton.Text = "Instant Spam: OFF"
-SpamButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-SpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpamButton.Parent = Frame
-
 -- Fire logic
 RunService.Heartbeat:Connect(function()
-    if firing then
-        if instantSpam then
-            Remote:FireServer(unpack(args))
-        elseif (tick() - lastFire) >= fireRate then
-            lastFire = tick()
-            Remote:FireServer(unpack(args))
-        end
+    if spamming and (tick() - lastFire) >= fireRate then
+        lastFire = tick()
+        Remote:FireServer()
     end
 end)
 
--- Toggle firing
+-- Toggle clicking
 ToggleButton.MouseButton1Click:Connect(function()
-    firing = not firing
-    if firing then
-        ToggleButton.Text = "Stop Firing"
+    spamming = not spamming
+    if spamming then
+        ToggleButton.Text = "Stop Clicking"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         lastFire = 0
     else
-        ToggleButton.Text = "Start Firing"
+        ToggleButton.Text = "Start Clicking"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    end
-end)
-
--- Toggle instant spam
-SpamButton.MouseButton1Click:Connect(function()
-    instantSpam = not instantSpam
-    if instantSpam then
-        SpamButton.Text = "Instant Spam: ON"
-        SpamButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    else
-        SpamButton.Text = "Instant Spam: OFF"
-        SpamButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     end
 end)
 
