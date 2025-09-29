@@ -1,7 +1,8 @@
--- UI + Fire Toggle + Fire Rate for ByteNet Script
+-- UI + Fire Toggle + Custom Fire Rate + Instant Spam Mode
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 -- Path
 local Remote = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("ByteNet"):WaitForChild("system"):WaitForChild("ByteNetReliable")
@@ -13,19 +14,22 @@ local args = {
 
 -- State
 local firing = false
-local fireRate = 0.5 -- default seconds between fires
+local instantSpam = false
+local fireRate = 0.5 -- default seconds
+local lastFire = 0
 
 -- UI
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local ToggleButton = Instance.new("TextButton")
+local SpamButton = Instance.new("TextButton")
 local RateBox = Instance.new("TextBox")
 local UIStroke = Instance.new("UIStroke")
 
 ScreenGui.Parent = game:GetService("CoreGui")
 
-Frame.Size = UDim2.new(0, 200, 0, 120)
-Frame.Position = UDim2.new(0.5, -100, 0.5, -60)
+Frame.Size = UDim2.new(0, 220, 0, 160)
+Frame.Position = UDim2.new(0.5, -110, 0.5, -80)
 Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Frame.Parent = ScreenGui
 Frame.Active = true
@@ -51,13 +55,22 @@ RateBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 RateBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 RateBox.Parent = Frame
 
--- Fire loop
-task.spawn(function()
-    while true do
-        if firing then
+SpamButton.Size = UDim2.new(1, -20, 0, 30)
+SpamButton.Position = UDim2.new(0, 10, 0, 100)
+SpamButton.Text = "Instant Spam: OFF"
+SpamButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+SpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpamButton.Parent = Frame
+
+-- Fire logic
+RunService.Heartbeat:Connect(function(dt)
+    if firing then
+        if instantSpam then
+            Remote:FireServer(unpack(args))
+        elseif (tick() - lastFire) >= fireRate then
+            lastFire = tick()
             Remote:FireServer(unpack(args))
         end
-        task.wait(fireRate)
     end
 end)
 
@@ -67,14 +80,27 @@ ToggleButton.MouseButton1Click:Connect(function()
     if firing then
         ToggleButton.Text = "Stop Firing"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        lastFire = 0
     else
         ToggleButton.Text = "Start Firing"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     end
 end)
 
+-- Toggle instant spam
+SpamButton.MouseButton1Click:Connect(function()
+    instantSpam = not instantSpam
+    if instantSpam then
+        SpamButton.Text = "Instant Spam: ON"
+        SpamButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    else
+        SpamButton.Text = "Instant Spam: OFF"
+        SpamButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    end
+end)
+
 -- Change fire rate
-RateBox.FocusLost:Connect(function(enterPressed)
+RateBox.FocusLost:Connect(function()
     local val = tonumber(RateBox.Text)
     if val and val > 0 then
         fireRate = val
