@@ -1,4 +1,4 @@
--- UI for ClickEvent + UpgradeEvent spam
+-- UI for ClickEvent + UpgradeEvent spam with true toggles
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -23,8 +23,8 @@ local UIStroke = Instance.new("UIStroke")
 
 ScreenGui.Parent = game:GetService("CoreGui")
 
-Frame.Size = UDim2.new(0, 240, 0, 180)
-Frame.Position = UDim2.new(0.5, -120, 0.5, -90)
+Frame.Size = UDim2.new(0, 240, 0, 160)
+Frame.Position = UDim2.new(0.5, -120, 0.5, -80)
 Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Frame.Parent = ScreenGui
 Frame.Active = true
@@ -35,20 +35,23 @@ UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 UIStroke.Color = Color3.fromRGB(0, 255, 100)
 UIStroke.Thickness = 2
 
+-- Click toggle
 ClickToggle.Size = UDim2.new(1, -20, 0, 40)
 ClickToggle.Position = UDim2.new(0, 10, 0, 10)
-ClickToggle.Text = "Start Clicking"
-ClickToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+ClickToggle.Text = "ClickEvent: OFF"
+ClickToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 ClickToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 ClickToggle.Parent = Frame
 
+-- Upgrade toggle
 UpgradeToggle.Size = UDim2.new(1, -20, 0, 40)
 UpgradeToggle.Position = UDim2.new(0, 10, 0, 60)
-UpgradeToggle.Text = "Start Upgrade"
-UpgradeToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+UpgradeToggle.Text = "UpgradeEvent: OFF"
+UpgradeToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 UpgradeToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 UpgradeToggle.Parent = Frame
 
+-- Shared box
 RateBox.Size = UDim2.new(1, -20, 0, 30)
 RateBox.Position = UDim2.new(0, 10, 0, 110)
 RateBox.PlaceholderText = "Fire rate / Amount"
@@ -84,12 +87,12 @@ end)
 ClickToggle.MouseButton1Click:Connect(function()
     clickSpamming = not clickSpamming
     if clickSpamming then
-        ClickToggle.Text = "Stop Clicking"
-        ClickToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        ClickToggle.Text = "ClickEvent: ON"
+        ClickToggle.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
         lastClick = 0
     else
-        ClickToggle.Text = "Start Clicking"
-        ClickToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        ClickToggle.Text = "ClickEvent: OFF"
+        ClickToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     end
 end)
 
@@ -97,12 +100,12 @@ end)
 UpgradeToggle.MouseButton1Click:Connect(function()
     upgradeSpamming = not upgradeSpamming
     if upgradeSpamming then
-        UpgradeToggle.Text = "Stop Upgrade"
-        UpgradeToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        UpgradeToggle.Text = "UpgradeEvent: ON"
+        UpgradeToggle.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
         lastUpgrade = 0
     else
-        UpgradeToggle.Text = "Start Upgrade"
-        UpgradeToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        UpgradeToggle.Text = "UpgradeEvent: OFF"
+        UpgradeToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     end
 end)
 
@@ -110,7 +113,7 @@ end)
 RateBox.FocusLost:Connect(function()
     local val = tonumber(RateBox.Text)
     if val and val > 0 then
-        fireRate = val -- sets fire rate for both
+        fireRate = val -- controls click delay
     else
         RateBox.Text = tostring(fireRate)
     end
