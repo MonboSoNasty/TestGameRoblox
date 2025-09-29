@@ -15,21 +15,21 @@ local args = {
 -- State
 local firing = false
 local instantSpam = false
-local fireRate = 0.5 -- default seconds
+local fireRate = 0.001 -- default seconds
 local lastFire = 0
 
 -- UI
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local ToggleButton = Instance.new("TextButton")
-local SpamButton = Instance.new("TextButton")
 local RateBox = Instance.new("TextBox")
+local SpamButton = Instance.new("TextButton")
 local UIStroke = Instance.new("UIStroke")
 
 ScreenGui.Parent = game:GetService("CoreGui")
 
-Frame.Size = UDim2.new(0, 220, 0, 160)
-Frame.Position = UDim2.new(0.5, -110, 0.5, -80)
+Frame.Size = UDim2.new(0, 240, 0, 180)
+Frame.Position = UDim2.new(0.5, -120, 0.5, -90)
 Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Frame.Parent = ScreenGui
 Frame.Active = true
@@ -55,7 +55,7 @@ RateBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 RateBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 RateBox.Parent = Frame
 
-SpamButton.Size = UDim2.new(1, -20, 0, 30)
+SpamButton.Size = UDim2.new(1, -20, 0, 40)
 SpamButton.Position = UDim2.new(0, 10, 0, 100)
 SpamButton.Text = "Instant Spam: OFF"
 SpamButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
@@ -63,7 +63,7 @@ SpamButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpamButton.Parent = Frame
 
 -- Fire logic
-RunService.Heartbeat:Connect(function(dt)
+RunService.Heartbeat:Connect(function()
     if firing then
         if instantSpam then
             Remote:FireServer(unpack(args))
