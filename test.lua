@@ -13,6 +13,7 @@ local skillList = {
 	"Body Damage",
 	"Health Regen",
 	"Max Health",
+	"Shield",
 	"Reload"
 }
 
