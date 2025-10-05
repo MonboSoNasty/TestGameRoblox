@@ -1,6 +1,7 @@
---// Auto Skill Upgrade GUI Toggle Script with Counters + Fire Speed Control
--- Works with executors like Synapse, Fluxus, etc.
--- Updated by MonboSoNasty + ChatGPT
+--// Advanced Auto Skill Upgrade GUI
+-- Each skill has its own toggle + fire count textbox
+-- Fires instantly (no delay)
+-- By MonboSoNasty + ChatGPT
 
 --// Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -18,110 +19,118 @@ local skillList = {
     "Reload"
 }
 
---// Counter Table (Persistent)
+--// Counters
 local counters = {}
-for _, skill in ipairs(skillList) do
-    counters[skill] = counters[skill] or 0
-end
+local running = {}
+local fireAmounts = {}
 
---// Default Fire Speed
-local fireSpeed = 0
+for _, skill in ipairs(skillList) do
+    counters[skill] = 0
+    running[skill] = false
+    fireAmounts[skill] = 1
+end
 
 --// GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
-local ToggleButton = Instance.new("TextButton")
-local CounterLabel = Instance.new("TextLabel")
-local SpeedBox = Instance.new("TextBox")
-local SpeedLabel = Instance.new("TextLabel")
-
-ScreenGui.Name = "AutoSkillGUI"
+ScreenGui.Name = "AdvancedSkillGUI"
 ScreenGui.Parent = game:GetService("CoreGui")
 
--- Toggle button
-ToggleButton.Size = UDim2.new(0, 160, 0, 50)
-ToggleButton.Position = UDim2.new(0.5, -80, 0.9, -25)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Font = Enum.Font.SourceSansBold
-ToggleButton.TextSize = 18
-ToggleButton.Text = "Auto Skill: OFF"
-ToggleButton.Parent = ScreenGui
-ToggleButton.Active = true
-ToggleButton.Draggable = true
+-- Background Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, (#skillList * 45) + 40)
+MainFrame.Position = UDim2.new(0.5, -150, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
--- Counter label
-CounterLabel.Size = UDim2.new(0, 220, 0, 200)
-CounterLabel.Position = UDim2.new(0.5, -110, 0.9, -260)
-CounterLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-CounterLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-CounterLabel.Font = Enum.Font.Code
-CounterLabel.TextSize = 16
-CounterLabel.Text = "Counters:\n"
-CounterLabel.TextYAlignment = Enum.TextYAlignment.Top
-CounterLabel.Parent = ScreenGui
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+Title.Text = "⚙️ Auto Skill Control"
+Title.Parent = MainFrame
 
--- Fire speed label
-SpeedLabel.Size = UDim2.new(0, 200, 0, 25)
-SpeedLabel.Position = UDim2.new(0.5, -100, 0.9, -65)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-SpeedLabel.Font = Enum.Font.SourceSansBold
-SpeedLabel.TextSize = 16
-SpeedLabel.Text = "Fire Speed (sec):"
-SpeedLabel.Parent = ScreenGui
+-- Create entries per skill
+for i, skill in ipairs(skillList) do
+    local yPos = 30 + (i - 1) * 45
 
--- Fire speed box
-SpeedBox.Size = UDim2.new(0, 80, 0, 25)
-SpeedBox.Position = UDim2.new(0.5, 30, 0.9, -65)
-SpeedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBox.Font = Enum.Font.Code
-SpeedBox.TextSize = 16
-SpeedBox.Text = tostring(fireSpeed)
-SpeedBox.Parent = ScreenGui
+    -- Skill Label
+    local SkillLabel = Instance.new("TextLabel")
+    SkillLabel.Size = UDim2.new(0, 120, 0, 40)
+    SkillLabel.Position = UDim2.new(0, 10, 0, yPos)
+    SkillLabel.BackgroundTransparency = 1
+    SkillLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SkillLabel.Font = Enum.Font.SourceSansBold
+    SkillLabel.TextSize = 16
+    SkillLabel.Text = skill
+    SkillLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SkillLabel.Parent = MainFrame
 
---// Update counter display
-local function updateCounterLabel()
-    local text = "Counters:\n"
-    for _, skill in ipairs(skillList) do
-        text = text .. skill .. ": " .. tostring(counters[skill]) .. "\n"
-    end
-    CounterLabel.Text = text
-end
-updateCounterLabel()
+    -- Fire amount box
+    local FireBox = Instance.new("TextBox")
+    FireBox.Size = UDim2.new(0, 50, 0, 30)
+    FireBox.Position = UDim2.new(0, 140, 0, yPos + 5)
+    FireBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    FireBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    FireBox.Font = Enum.Font.Code
+    FireBox.TextSize = 16
+    FireBox.Text = "1"
+    FireBox.Parent = MainFrame
 
---// Logic
-local autoUpgrade = false
+    -- Counter Label
+    local CounterLabel = Instance.new("TextLabel")
+    CounterLabel.Size = UDim2.new(0, 60, 0, 30)
+    CounterLabel.Position = UDim2.new(0, 200, 0, yPos + 5)
+    CounterLabel.BackgroundTransparency = 1
+    CounterLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    CounterLabel.Font = Enum.Font.Code
+    CounterLabel.TextSize = 14
+    CounterLabel.Text = "0"
+    CounterLabel.Parent = MainFrame
 
--- Update fire speed when text changes
-SpeedBox.FocusLost:Connect(function(enterPressed)
-    local newSpeed = tonumber(SpeedBox.Text)
-    if newSpeed and newSpeed >= 0 then
-        fireSpeed = newSpeed
-        SpeedBox.Text = tostring(fireSpeed)
-    else
-        SpeedBox.Text = tostring(fireSpeed)
-    end
-end)
+    -- Toggle Button
+    local Toggle = Instance.new("TextButton")
+    Toggle.Size = UDim2.new(0, 60, 0, 30)
+    Toggle.Position = UDim2.new(0, 260, 0, yPos + 5)
+    Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Toggle.Font = Enum.Font.SourceSansBold
+    Toggle.TextSize = 16
+    Toggle.Text = "OFF"
+    Toggle.Parent = MainFrame
 
--- Toggle button click
-ToggleButton.MouseButton1Click:Connect(function()
-    autoUpgrade = not autoUpgrade
-    ToggleButton.Text = autoUpgrade and "Auto Skill: ON" or "Auto Skill: OFF"
-    ToggleButton.BackgroundColor3 = autoUpgrade and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(45, 45, 45)
+    -- Input behavior
+    FireBox.FocusLost:Connect(function()
+        local val = tonumber(FireBox.Text)
+        if val and val > 0 then
+            fireAmounts[skill] = val
+        else
+            FireBox.Text = tostring(fireAmounts[skill])
+        end
+    end)
 
-    if autoUpgrade then
-        task.spawn(function()
-            while autoUpgrade do
-                for _, skillName in ipairs(skillList) do
-                    if not autoUpgrade then break end
-                    SkillUpgrade:FireServer(skillName)
-                    counters[skillName] += 1
-                    updateCounterLabel()
-                    task.wait(fireSpeed)
+    -- Toggle behavior
+    Toggle.MouseButton1Click:Connect(function()
+        running[skill] = not running[skill]
+        Toggle.Text = running[skill] and "ON" or "OFF"
+        Toggle.BackgroundColor3 = running[skill] and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(45, 45, 45)
+
+        if running[skill] then
+            task.spawn(function()
+                for _ = 1, fireAmounts[skill] do
+                    if not running[skill] then break end
+                    SkillUpgrade:FireServer(skill)
+                    counters[skill] += 1
+                    CounterLabel.Text = tostring(counters[skill])
+                    -- no delay for max speed
                 end
-                task.wait(1)
-            end
-        end)
-    end
-end)
+                running[skill] = false
+                Toggle.Text = "OFF"
+                Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            end)
+        end
+    end)
+end
