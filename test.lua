@@ -1,41 +1,56 @@
--- Simple UI Auto Fire Click Remote
+--// Auto Skill Upgrade GUI Toggle Script
+-- Works with executors like Synapse, Fluxus, etc.
+
+--// Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ClickRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Click")
+local SkillUpgrade = ReplicatedStorage:WaitForChild("Skills"):WaitForChild("Upgrade")
 
--- UI Library (basic Instance creation)
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 200, 0, 120)
-Frame.Position = UDim2.new(0.4, 0, 0.4, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+--// Skills to Upgrade
+local skillList = {
+    "Bullet Penetration",
+    "Bullet Damage",
+    "Bullet Speed",
+	"Body Damage",
+	"Health Regen",
+	"Max Health",
+	"Reload"
+}
 
-local Toggle = Instance.new("TextButton", Frame)
-Toggle.Size = UDim2.new(0, 180, 0, 40)
-Toggle.Position = UDim2.new(0, 10, 0, 10)
-Toggle.Text = "Start Firing"
-Toggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
-Toggle.TextColor3 = Color3.new(1,1,1)
+--// GUI Setup
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
 
-local SpeedBox = Instance.new("TextBox", Frame)
-SpeedBox.Size = UDim2.new(0, 180, 0, 40)
-SpeedBox.Position = UDim2.new(0, 10, 0, 60)
-SpeedBox.PlaceholderText = "Firespeed (sec)"
-SpeedBox.Text = "0.1"
-SpeedBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
-SpeedBox.TextColor3 = Color3.new(1,1,1)
+ScreenGui.Name = "AutoSkillGUI"
+ScreenGui.Parent = game:GetService("CoreGui")
 
--- Toggle logic
-local firing = false
-Toggle.MouseButton1Click:Connect(function()
-	firing = not firing
-	Toggle.Text = firing and "Stop Firing" or "Start Firing"
-	if firing then
-		task.spawn(function()
-			while firing do
-				local delayTime = tonumber(SpeedBox.Text) or 0.1
-				ClickRemote:FireServer()
-				task.wait(delayTime)
-			end
-		end)
-	end
+ToggleButton.Size = UDim2.new(0, 160, 0, 50)
+ToggleButton.Position = UDim2.new(0.5, -80, 0.9, -25)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 18
+ToggleButton.Text = "Auto Skill: OFF"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Active = true
+ToggleButton.Draggable = true
+
+--// Logic
+local autoUpgrade = false
+
+ToggleButton.MouseButton1Click:Connect(function()
+    autoUpgrade = not autoUpgrade
+    ToggleButton.Text = autoUpgrade and "Auto Skill: ON" or "Auto Skill: OFF"
+    ToggleButton.BackgroundColor3 = autoUpgrade and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(45, 45, 45)
+
+    if autoUpgrade then
+        task.spawn(function()
+            while autoUpgrade do
+                for _, skillName in ipairs(skillList) do
+                    SkillUpgrade:FireServer(skillName)
+                    task.wait(0.25)
+                end
+                task.wait(1)
+            end
+        end)
+    end
 end)
