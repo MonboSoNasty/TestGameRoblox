@@ -13,7 +13,7 @@ local skillList = {
 	"Bullet Damage",
 	"Bullet Speed",
 	"Body Damage",
-	"Health Regen",
+	"Health Regeneration",
 	"Max Health",
 	"Shield",
 	"Reload"
